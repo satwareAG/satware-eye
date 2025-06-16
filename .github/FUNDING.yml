@@ -1,0 +1,17 @@
+# Sponsorship Configuration for satware-eye Project
+# Supporting cutting-edge AGI research and development
+
+# Primary sponsorship through GitHub Sponsors
+github: [satwareAG-ironMike]
+
+# Custom sponsorship and enterprise partnerships
+custom: [
+  'https://satware.ai/sponsor-satware-eye',
+  'https://chat.satware.ai/enterprise-partnership'
+]
+
+# Community-driven transparent funding
+# open_collective: satware-eye  # Uncomment when collective is created
+
+# Issue-specific bounty funding
+# issuehunt: satwareAG  # Uncomment when IssueHunt is configured
