@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>satware Eye - Kinect Enhanced Vision</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .video-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .video-panel h3 {
+            margin: 0 0 15px 0;
+            color: #4ecdc4;
+        }
+        
+        #rgbVideo, #depthCanvas {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 10px;
+            background: #000;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .control-panel h3 {
+            margin: 0 0 15px 0;
+            color: #ff6b6b;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .response-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .response-panel h3 {
+            margin: 0 0 15px 0;
+            color: #4ecdc4;
+        }
+        
+        #responseArea {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.connected {
+            background: #4ecdc4;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .motor-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .motor-controls input[type="range"] {
+            flex: 1;
+        }
+        
+        .tilt-display {
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        @media (max-width: 768px) {
+            .video-container,
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎆 satware Eye</h1>
+            <p>Kinect Enhanced Vision System</p>
+        </div>
+        
+        <div class="video-container">
+            <div class="video-panel">
+                <h3>📷 RGB Camera</h3>
+                <video id="rgbVideo" autoplay muted></video>
+            </div>
+            <div class="video-panel">
+                <h3>🌊 Depth Sensor</h3>
+                <canvas id="depthCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-panel">
+                <h3>🔧 Vision Settings</h3>
+                <div class="form-group">
+                    <label for="baseUrl">API Base URL:</label>
+                    <input type="text" id="baseUrl" value="http://localhost:8080">
+                </div>
+                <div class="form-group">
+                    <label for="instruction">AI Instruction:</label>
+                    <textarea id="instruction" placeholder="What do you see?">Describe what you see in detail, including objects, people, and spatial relationships.</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="interval">Processing Interval:</label>
+                    <select id="interval">
+                        <option value="100">100ms (Very Fast)</option>
+                        <option value="500" selected>500ms (Fast)</option>
+                        <option value="1000">1000ms (Normal)</option>
+                        <option value="2000">2000ms (Slow)</option>
+                        <option value="5000">5000ms (Very Slow)</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="startBtn">🚀 Start Vision</button>
+                    <button class="btn btn-secondary" id="stopBtn" disabled>🛑 Stop</button>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <h3>🎛️ Kinect Controls</h3>
+                <div class="form-group">
+                    <label for="tiltSlider">Camera Tilt:</label>
+                    <div class="motor-controls">
+                        <span>-27°</span>
+                        <input type="range" id="tiltSlider" min="-27" max="27" value="0" step="1">
+                        <span>+27°</span>
+                        <div class="tilt-display" id="tiltDisplay">0°</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ledSelect">LED Status:</label>
+                    <select id="ledSelect">
+                        <option value="0">Off</option>
+                        <option value="1" selected>Green</option>
+                        <option value="2">Red</option>
+                        <option value="3">Yellow</option>
+                        <option value="4">Blink Green</option>
+                        <option value="5">Blink Red/Yellow</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-info" id="captureBtn">📸 Capture</button>
+                    <button class="btn btn-info" id="testBtn">🔍 Test Hardware</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="response-panel">
+            <h3>🤖 AI Vision Response</h3>
+            <textarea id="responseArea" readonly placeholder="AI responses will appear here..."></textarea>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator" id="kinectStatus"></div>
+                <span>Kinect: <span id="kinectStatusText">Disconnected</span></span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator" id="apiStatus"></div>
+                <span>API: <span id="apiStatusText">Disconnected</span></span>
+            </div>
+            <div class="status-item">
+                <span>Frames: <span id="frameCount">0</span></span>
+            </div>
+            <div class="status-item">
+                <span>FPS: <span id="fpsDisplay">0</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/kinect.js"></script>
+</body>
+</html>
